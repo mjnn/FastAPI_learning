@@ -5,6 +5,7 @@ from typing import Annotated
 class UserBase(BaseModel):
     username: str
     email: EmailStr
+    is_active: bool = True
 
 class UserForCreate(UserBase):
     password: str = Field(

@@ -58,7 +58,7 @@ async def request_validation_handler(request: Request, exc: RequestValidationErr
         status_code=422,  # 保持 422 Unprocessable Entity 状态码（符合 HTTP 规范）
         content={
             "code": 400,
-            "msg": "参数验证失败",
+            "message": "参数验证失败",
             "errors": custom_errors
         }
     )
