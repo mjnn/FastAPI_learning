@@ -3,9 +3,13 @@ from typing import Annotated
 
 
 class UserBase(BaseModel):
-    username: str
+    username: str = Field(
+        ...,  # 必填字段
+        min_length=1, # 最小长度1位
+        max_length=50, # 最大长50
+        description="用户名 长度1-50位"
+    )
     email: EmailStr
-    is_active: bool = True
 
 class UserForCreate(UserBase):
     password: str = Field(

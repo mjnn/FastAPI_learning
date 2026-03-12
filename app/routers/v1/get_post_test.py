@@ -1,5 +1,5 @@
 from fastapi import APIRouter,Body
-from app.core.response import success_response, error_response, ResponseModel, ErrorResponseModel
+from app.core.response import success_response, error_response, BaseResponseModel, ErrorResponseModel
 from app.schemas.get_post_test import two_numbers
 from typing import Annotated
 
@@ -9,7 +9,7 @@ router = APIRouter(
     tags=["get_post_test"]
 )
 
-@router.get("/", response_model=ResponseModel)
+@router.get("/", response_model=BaseResponseModel)
 async def just_get():
     """
     这是一个没有任何参数的Get请求
@@ -17,7 +17,7 @@ async def just_get():
     return success_response('这是一个没有任何参数的Get请求')
 
 
-@router.get("/path_param/{num1}/{num2}", response_model=ResponseModel)
+@router.get("/path_param/{num1}/{num2}", response_model=BaseResponseModel)
 async def path_param(num1: int = None, num2: int = None):
     """
     这是一个路径参数请求
@@ -25,7 +25,7 @@ async def path_param(num1: int = None, num2: int = None):
     result = num1 + num2
     return success_response(f'{num1}+{num2}={result}')
 
-@router.get("/query_param", response_model=ResponseModel)
+@router.get("/query_param", response_model=BaseResponseModel)
 async def query_param(num1: int, num2: int):
     """
     这是一个查询参数请求
@@ -34,7 +34,7 @@ async def query_param(num1: int, num2: int):
     return success_response(f'{num1}+{num2}={result}')
 
 
-@router.post("/body_param", response_model=ResponseModel)
+@router.post("/body_param", response_model=BaseResponseModel)
 async def body_param(
         numbers: Annotated[
             two_numbers,
