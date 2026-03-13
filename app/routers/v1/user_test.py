@@ -85,8 +85,6 @@ def read_user(
 
 @router.put("/update_user", response_model=ResponseModel)
 def update_user(username: str, session: SessionDep):
-    statement = select(DbUserTable).where(DbUserTable.username == username)
-    user = session.exec(statement).first()
     if not user:
         return ResponseModel(
             http_code=404, errors=f'用户{username}不存在！')

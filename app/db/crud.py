@@ -1,7 +1,7 @@
 from typing import Optional, Annotated
 from pydantic import BaseModel
 from app.schemas.user_test import UserForCreate
-from fastapi import Body
+from fastapi import Body, HTTPException
 from app.services.user_test import hash_password
 from app.db.session import SessionDep
 from app.models.user_test import DbUserTable
@@ -59,3 +59,16 @@ def db_read_user(
     user = session.exec(statement).first()  # first() 取第一条，无结果返回 None
 
     return user
+
+
+def db_update_user(
+        user: DbUserTable,
+        session: SessionDep
+)-> DbUserTable:
+    query_dict = {
+        'query_field': 'username',
+        'query_value': user.username,
+    }
+    db_user = db_read_user(query_dict, session)
+    if not db_user:
+        return None
