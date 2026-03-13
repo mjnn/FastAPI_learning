@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr, field_validator
-from typing import Annotated
+from typing import Annotated, Literal
 
 
 class UserBase(BaseModel):
@@ -39,3 +39,10 @@ class UserForCreate(UserBase):
             )
 
         return v
+
+
+
+query_field_restrict = Literal['username', 'email', 'userid']
+class db_user_query(BaseModel):
+    query_field : query_field_restrict = 'username'
+    query_value : str

@@ -1,7 +1,7 @@
 from fastapi import FastAPI,Request
 from app.routers.v1 import get_post_test, user_test
 from app.core.config import settings
-from app.core.response import success_response, error_response, request_validation_handler, sqlmodel_validation_handler
+from app.core.response import request_validation_handler, sqlmodel_validation_handler, ResponseModel
 from fastapi.exceptions import RequestValidationError
 from app.core.config import settings
 from sqlmodel import create_engine, SQLModel
@@ -40,4 +40,4 @@ def on_startup():
 
 @app.get('/')
 def root():
-    return success_response('Here is Root!')
+    return ResponseModel(data='Here is Root!')
