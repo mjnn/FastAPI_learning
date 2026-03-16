@@ -1,12 +1,9 @@
 from fastapi import APIRouter, Body, HTTPException, status
 from typing import Annotated
-from app.schemas.user_test import UserForCreate, db_user_query
-from app.services.user_test import hash_password
-from app.models.user_test import DbUserTable
+from app.schemas.user_test import UserForCreate, db_user_query, UserForUpdate
 from app.db.session import SessionDep
-from app.db.crud import db_create_user,db_read_user
+from app.db.crud import db_create_user,db_read_user,db_update_user
 from app.core.response import ResponseModel
-from sqlmodel import select
 
 router = APIRouter(
     prefix="/user_test",
@@ -84,7 +81,10 @@ def read_user(
 
 
 @router.put("/update_user", response_model=ResponseModel)
-def update_user(username: str, session: SessionDep):
-    if not user:
+def update_user(userid: int,user_new : UserForUpdate, session: SessionDep):
+    db_user = db_update_user(userid, user_new, session)
+    if not db_user:
         return ResponseModel(
-            http_code=404, errors=f'用户{username}不存在！')
+            http_code=404, errors=f'用户{userid}不存在！')
+
+    return ResponseModel(data=db_user)

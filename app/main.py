@@ -1,7 +1,8 @@
 from fastapi import FastAPI,Request
 from app.routers.v1 import get_post_test, user_test
 from app.core.config import settings
-from app.core.response import request_validation_handler, sqlmodel_validation_handler, ResponseModel
+from app.core.exception import request_validation_handler, sqlmodel_validation_handler,AlreadyExistException
+from app.core.response import ResponseModel
 from fastapi.exceptions import RequestValidationError
 from app.core.config import settings
 from sqlmodel import create_engine, SQLModel
@@ -12,13 +13,12 @@ from sqlalchemy.exc import (
     NoResultFound,    # 查询无结果
     MultipleResultsFound  # 查询返回多条结果
 )
-
 # 实例化FastAPI
 app = FastAPI()
 
 # 注册请求参数的类型验证错误
 app.exception_handler(RequestValidationError)(request_validation_handler)
-
+app.exception_handler(AlreadyExistException)(request_validation_handler)
 app.exception_handler(IntegrityError)(sqlmodel_validation_handler)
 
 # 注册路由

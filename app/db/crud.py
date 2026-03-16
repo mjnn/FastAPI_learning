@@ -2,12 +2,13 @@ from typing import Optional, Annotated
 from pydantic import BaseModel
 from app.schemas.user_test import UserForCreate
 from fastapi import Body, HTTPException
-from app.services.user_test import hash_password
+from app.utils.encryption import hash_password
 from app.db.session import SessionDep
 from app.models.user_test import DbUserTable
-from app.schemas.user_test import UserForCreate
+from app.schemas.user_test import UserForCreate,UserForUpdate
 from app.schemas.user_test import db_user_query
 from sqlmodel import select
+from app.core.exception import AlreadyExistException
 
 def db_create_user(
         user: UserForCreate,
@@ -19,11 +20,10 @@ def db_create_user(
     :param session: 数据库操作会话
     :return: 操作完成的用户数据库模型
     """
-    user = hash_password(user)
     db_user = DbUserTable(
         username=user.username,
         email=user.email,
-        hashed_password=user.password,
+        hashed_password=hash_password(user.password),
     )
     session.add(db_user)
     session.commit()
@@ -62,13 +62,37 @@ def db_read_user(
 
 
 def db_update_user(
-        user: DbUserTable,
+        userid: int,
+        user_new: UserForUpdate,
         session: SessionDep
 )-> DbUserTable:
-    query_dict = {
-        'query_field': 'username',
-        'query_value': user.username,
-    }
-    db_user = db_read_user(query_dict, session)
+    """
+    更新用户信息
+    :param userid: 用户id
+    :param user_new: 新的用户信息
+    :param session: 数据库会话依赖注入
+    :return: 更改成功返回用户对象，未找到用户id则返回 None
+    """
+    already_exist_exception_key_list = []
+    db_user = session.get(DbUserTable, userid)
     if not db_user:
         return None
+    for key,value in user_new.model_dump().items():
+        if key == 'password':
+            print(value)
+            setattr(db_user, 'hashed_password', hash_password(value))
+        if hasattr(db_user, key):
+            if value is not None:
+                if value != getattr(db_user, key):
+                    setattr(db_user, key, value)
+                else:
+                    already_exist_exception_key_list.append(key)
+    db_user
+    if already_exist_exception_key_list:
+        raise AlreadyExistException(f'{already_exist_exception_key_list}由于和原数据一致，没有完成更改！')
+
+    session.commit()
+    session.refresh(db_user)
+
+    return db_user
+
