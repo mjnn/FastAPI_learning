@@ -8,7 +8,7 @@ from app.models.user_test import DbUserTable
 from app.schemas.user_test import UserForCreate,UserForUpdate
 from app.schemas.user_test import db_user_query
 from sqlmodel import select
-from app.core.exception import AlreadyExistException
+from app.core.exception import AlreadyExistException, DbOperationError
 
 def db_create_user(
         user: UserForCreate,
@@ -65,7 +65,7 @@ def db_update_user(
         userid: int,
         user_new: UserForUpdate,
         session: SessionDep
-)-> DbUserTable:
+)-> DbUserTable | None:
     """
     更新用户信息
     :param userid: 用户id
@@ -95,4 +95,22 @@ def db_update_user(
     session.refresh(db_user)
 
     return db_user
+
+
+def db_delete_user(
+        userid: int,
+        session: SessionDep
+) -> DbUserTable | None:
+    db_user = session.get(DbUserTable, userid)
+    if not db_user:
+        return None
+    deleted_user = db_user
+    session.delete(db_user)
+    session.commit()
+
+    db_user = session.get(DbUserTable, userid)
+    if not db_user:
+        return deleted_user
+    else:
+        raise DbOperationError('删除数据失败！')
 

@@ -2,12 +2,12 @@ from fastapi import APIRouter, Body, HTTPException, status
 from typing import Annotated
 from app.schemas.user_test import UserForCreate, db_user_query, UserForUpdate
 from app.db.session import SessionDep
-from app.db.crud import db_create_user,db_read_user,db_update_user
+from app.db.crud import db_create_user, db_read_user, db_update_user, db_delete_user
 from app.core.response import ResponseModel
 
 router = APIRouter(
-    prefix="/user_test",
-    tags=["user_test"]
+    prefix="/user",
+    tags=["user"]
 )
 
 @router.post(
@@ -34,8 +34,8 @@ def create_user(
     db_user = db_create_user(user,session)
     return ResponseModel(data=f'用户{db_user.username}创建完成！')
 
-@router.post("/read_user", response_model=ResponseModel)
-def read_user(
+@router.post("/query_user", response_model=ResponseModel,status_code = status.HTTP_200_OK)
+def query_user(
         query_dict: Annotated[
             db_user_query,
             Body(
@@ -80,11 +80,30 @@ def read_user(
     return ResponseModel(data=user)
 
 
-@router.put("/update_user", response_model=ResponseModel)
+@router.put("/update_user", response_model=ResponseModel,status_code = status.HTTP_200_OK)
 def update_user(userid: int,user_new : UserForUpdate, session: SessionDep):
     db_user = db_update_user(userid, user_new, session)
     if not db_user:
-        return ResponseModel(
-            http_code=404, errors=f'用户{userid}不存在！')
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": '请求失败！',
+                "errors": f'userid为{userid}的用户不存在！'
+            }
+        )
+
+    return ResponseModel(data=db_user)
+
+@router.delete("/delete_user", response_model=ResponseModel,status_code = status.HTTP_200_OK)
+def delete_user(userid: int, session: SessionDep):
+    db_user = db_delete_user(userid, session)
+    if not db_user:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "message": '请求失败！',
+                "errors": f'userid为{userid}的用户不存在！'
+            }
+        )
 
     return ResponseModel(data=db_user)

@@ -13,6 +13,24 @@ class AlreadyExistException(Exception):
     """
     pass
 
+class DbOperationError(Exception):
+    """
+    用于任何数据库操作错误
+    """
+    pass
+
+async def db_error_handler(request: Request, exc: DbOperationError):
+    """
+    用于处理数据库报错
+    """
+    return JSONResponse(
+        status_code=500,
+        content={
+            "message": '数据库操作失败',
+            "errors": exc.__str__(),
+        }
+    )
+
 async def http_exception_handler(request: Request, exc: HTTPException):
     """
     处理通用HTTP异常

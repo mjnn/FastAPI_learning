@@ -1,7 +1,13 @@
 from fastapi import FastAPI,Request
-from app.routers.v1 import get_post_test, user_test
+from app.routers.v1 import get_post_test, user
 from app.core.config import settings
-from app.core.exception import request_validation_handler, sqlmodel_validation_handler,AlreadyExistException
+from app.core.exception import (
+    request_validation_handler,
+    sqlmodel_validation_handler,
+    AlreadyExistException,
+    db_error_handler,
+    DbOperationError
+)
 from app.core.response import ResponseModel
 from fastapi.exceptions import RequestValidationError
 from app.core.config import settings
@@ -20,6 +26,7 @@ app = FastAPI()
 app.exception_handler(RequestValidationError)(request_validation_handler)
 app.exception_handler(AlreadyExistException)(request_validation_handler)
 app.exception_handler(IntegrityError)(sqlmodel_validation_handler)
+app.exception_handler(DbOperationError)(db_error_handler)
 
 # 注册路由
 app.include_router(
@@ -29,7 +36,7 @@ app.include_router(
 
 
 app.include_router(
-    user_test.router,
+    user.router,
     prefix=settings.API_V1_STR
 )
 

@@ -7,7 +7,7 @@ T = TypeVar("T")
 
 
 class ResponseModel(GenericModel, Generic[T]):
-    """基础响应模型（无code字段，code作为HTTP状态码）"""
+    """基础响应模型"""
     message: str = Field('success', description="返回消息")
     data: Optional[T] = Field(None, description="返回数据")
 
